@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class Rest {
     final Object kit = new Object();
     final Object ord = new Object();
@@ -6,24 +8,15 @@ public class Rest {
     long cooking = 3000;
     long eating = 2000;
     long beginning = 500;
+    ArrayList<Runnable> orders = new ArrayList<>();
 
-
-    public void cook()  {
-        System.out.println(Thread.currentThread().getName() + " на работе!");
-        try {
-            c.wait();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
 
     public void waiter() {
         try {
             Thread.sleep(beginning);
             System.out.println(Thread.currentThread().getName() + " на работе!");
-            w.wait();
             Thread.sleep(beginning * 3);
-            order();
+            acceptanceOrder();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -35,7 +28,27 @@ public class Rest {
             int n = (int) Math.floor(Math.random() * myLong.length);
             Thread.sleep(myLong[n]);
             System.out.println(Thread.currentThread().getName() + " в ресторане");
-            w.notify();
+            long[] orderT = new long[]{1000, 2000, 3000};
+            int o = (int) Math.floor(Math.random() * orderT.length);
+            Thread.sleep(orderT[o]);
+            System.out.println(Thread.currentThread().getName() + " готов сделать заказ");
+//            putOrder();
+//            orders.add(order);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void acceptanceOrder() {
+        System.out.println(Thread.currentThread().getName() + " принял заказ");
+    }
+
+    public void deliveryOrder() {
+        System.out.println(Thread.currentThread().getName() + " несет заказ");
+    }
+
+    public void meal() {
+        try {
             System.out.println(Thread.currentThread().getName() + " приступил к еде");
             Thread.sleep(eating);
             System.out.println(Thread.currentThread().getName() + " вышел из ресторана");
@@ -44,22 +57,24 @@ public class Rest {
         }
     }
 
-    public void order() {
-        System.out.println(Thread.currentThread().getName() + " принял заказ");
-        kitchen();
-        System.out.println(Thread.currentThread().getName() + " несет заказ");
-    }
-
-    public void kitchen() {
-        synchronized (kit) {
-            System.out.println("Повар готовит блюдо");
+    public synchronized Runnable get() {
+        while (orders.isEmpty()) {
             try {
-                Thread.sleep(cooking);
+                wait();
+                System.out.println("Повар готовит блюдо");
+                Thread.sleep(5000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             System.out.println("Повар закончил готовить");
-            c.notify();
         }
+        Runnable order = orders.get(0);
+        orders.remove(order);
+        return order;
+    }
+
+    public synchronized void putOrder(Runnable order) {
+        orders.add(order);
+        notify();
     }
 }
