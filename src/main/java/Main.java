@@ -1,5 +1,3 @@
-import java.util.concurrent.BlockingQueue;
-
 public class Main {
     public static void main(String[] args) {
         Rest rest = new Rest();
@@ -14,7 +12,7 @@ public class Main {
         ThreadGroup visitor = new ThreadGroup("посетители");
         for (int i = 0; i < 5; i++) {
             int n = i + 1;
-            new Thread(visitor, rest::visitor, "Посетитель" + n).start();;
+            new Thread(visitor, rest::visitor, "Посетитель" + n).start();
         }
     }
 }
